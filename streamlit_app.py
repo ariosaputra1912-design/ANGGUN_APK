@@ -10,14 +10,14 @@ class Person:
         raise NotImplementedError
 
 class Mahasiswa(Person):
-    def __init__(self, npm, nama, prodi, kelas):
-        self.npm = npm
+    def __init__(self, nim, nama, prodi, kelas):
+        self.nim = nim
         self.nama = nama
         self.prodi = prodi
         self.kelas = kelas
 
     def tampil_info(self):
-        return f"{self.npm} | {self.nama} | {self.prodi} | {self.kelas}"
+        return f"{self.nim} | {self.nama} | {self.prodi} | {self.kelas}"
 
     def to_dict(self):
         return self.__dict__
@@ -25,8 +25,8 @@ class Mahasiswa(Person):
 # ==========================
 # VALIDATION (REGEX)
 # ==========================
-def valid_npm(npm):
-    return re.fullmatch(r"\d{12}", npm)
+def valid_nim(nim):
+    return re.fullmatch(r"\d{12}", nim)
 
 def valid_nama(nama):
     return re.fullmatch(r"[A-Za-z ]+", nama)
@@ -66,21 +66,21 @@ def bubble_sort(data, key, reverse=False):
         data.reverse()
 
 # ==========================
-# SEARCHING (BERDASARKAN NPM)
+# SEARCHING (BERDASARKAN NIM)
 # ==========================
-def linear_search(data, npm):
+def linear_search(data, nim):
     for m in data:
-        if m.npm == npm:
+        if m.nim == nim:
             return m
     return None
 
-def binary_search(data, npm):
+def binary_search(data, nim):
     low, high = 0, len(data) - 1
     while low <= high:
         mid = (low + high) // 2
-        if data[mid].npm == npm:
+        if data[mid].nim == nim:
             return data[mid]
-        elif data[mid].npm < npm:
+        elif data[mid].nim < nim:
             low = mid + 1
         else:
             high = mid - 1
@@ -139,20 +139,20 @@ st.title("🎓 Manajemen Data Mahasiswa")
 st.subheader("➕ Tambah Data Mahasiswa")
 
 with st.form("tambah"):
-    npm = st.text_input("NPM")
+    nim = st.text_input("NIM")
     nama = st.text_input("Nama")
     prodi = st.text_input("Prodi")
     kelas = st.text_input("Kelas")
     simpan = st.form_submit_button("Tambah")
 
     if simpan:
-        if not valid_npm(npm):
-            st.error("NPM harus 12 digit")
+        if not valid_nim(nim):
+            st.error("NIM harus 12 digit")
         elif not valid_nama(nama):
             st.error("Nama hanya huruf")
         else:
             st.session_state.data.append(
-                Mahasiswa(npm, nama, prodi, kelas)
+                Mahasiswa(nim, nama, prodi, kelas)
             )
             save_data(st.session_state.data)
             st.success("Data berhasil ditambahkan")
@@ -163,13 +163,13 @@ with st.form("tambah"):
 # ==========================
 st.subheader("✏️ Edit Data Mahasiswa")
 
-npm_edit = st.selectbox(
-    "Pilih NPM",
-    [""] + [m.npm for m in st.session_state.data]
+nim_edit = st.selectbox(
+    "Pilih NIM",
+    [""] + [m.nim for m in st.session_state.data]
 )
 
-if npm_edit:
-    mhs = next(m for m in st.session_state.data if m.npm == npm_edit)
+if nim_edit:
+    mhs = next(m for m in st.session_state.data if m.nim == nim_edit)
 
     with st.form("edit"):
         nama_baru = st.text_input("Nama", value=mhs.nama)
@@ -193,16 +193,16 @@ if npm_edit:
 # ==========================
 st.subheader("🗑 Hapus Data Mahasiswa")
 
-npm_hapus = st.selectbox(
-    "Pilih NPM yang akan dihapus",
-    [""] + [m.npm for m in st.session_state.data],
+nim_hapus = st.selectbox(
+    "Pilih NIM yang akan dihapus",
+    [""] + [m.nim for m in st.session_state.data],
     key="hapus"
 )
 
-if npm_hapus:
+if nim_hapus:
     if st.button("Hapus Data"):
         st.session_state.data = [
-            m for m in st.session_state.data if m.npm != npm_hapus
+            m for m in st.session_state.data if m.nim != nim_hapus
         ]
         save_data(st.session_state.data)
         st.success("Data berhasil dihapus")
@@ -238,21 +238,21 @@ if st.button("Urutkan"):
 # ==========================
 # SEARCHING
 # ==========================
-st.subheader("🔍 Searching Berdasarkan NPM")
+st.subheader("🔍 Searching Berdasarkan NIM")
 
-npm_cari = st.text_input("Masukkan NPM")
+nim_cari = st.text_input("Masukkan NIM")
 
 c1, c2 = st.columns(2)
 
 with c1:
     if st.button("Linear Search"):
-        m = linear_search(st.session_state.data, npm_cari)
+        m = linear_search(st.session_state.data, nim_cari)
         st.success(m.tampil_info()) if m else st.warning("Data tidak ditemukan")
 
 with c2:
     if st.button("Binary Search"):
-        insertion_sort(st.session_state.data, key=lambda x: x.npm)
-        m = binary_search(st.session_state.data, npm_cari)
+        insertion_sort(st.session_state.data, key=lambda x: x.nim)
+        m = binary_search(st.session_state.data, nim_cari)
         st.success(m.tampil_info()) if m else st.warning("Data tidak ditemukan")
 
 # ==========================
@@ -263,3 +263,4 @@ st.dataframe(
     [m.to_dict() for m in st.session_state.data],
     use_container_width=True
 )
+
