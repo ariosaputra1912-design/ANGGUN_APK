@@ -263,4 +263,3 @@ st.dataframe(
     [m.to_dict() for m in st.session_state.data],
     use_container_width=True
 )
-
