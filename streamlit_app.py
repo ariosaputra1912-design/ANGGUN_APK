@@ -23,7 +23,7 @@ class Mahasiswa(Person):
         return self.__dict__
 
 # ==========================
-# VALIDATION
+# VALIDATION (REGEX)
 # ==========================
 def valid_npm(npm):
     return re.fullmatch(r"\d{12}", npm)
@@ -32,7 +32,7 @@ def valid_nama(nama):
     return re.fullmatch(r"[A-Za-z ]+", nama)
 
 # ==========================
-# SORTING ALGORITHMS (NAMA)
+# SORTING (BERDASARKAN NAMA)
 # ==========================
 def insertion_sort(data, key, reverse=False):
     for i in range(1, len(data)):
@@ -66,7 +66,7 @@ def bubble_sort(data, key, reverse=False):
         data.reverse()
 
 # ==========================
-# SEARCHING (NPM)
+# SEARCHING (BERDASARKAN NPM)
 # ==========================
 def linear_search(data, npm):
     for m in data:
@@ -87,7 +87,7 @@ def binary_search(data, npm):
     return None
 
 # ==========================
-# FILE I/O
+# FILE I/O JSON
 # ==========================
 def load_data():
     try:
@@ -124,7 +124,7 @@ if not st.session_state.login:
             st.session_state.login = True
             st.rerun()
         else:
-            st.error("Login gagal")
+            st.error("Username atau password salah")
 
     st.stop()
 
@@ -133,15 +133,19 @@ if not st.session_state.login:
 # ==========================
 st.title("🎓 Manajemen Data Mahasiswa")
 
-# ========= INPUT =========
-with st.form("input"):
+# ==========================
+# TAMBAH DATA
+# ==========================
+st.subheader("➕ Tambah Data Mahasiswa")
+
+with st.form("tambah"):
     npm = st.text_input("NPM")
     nama = st.text_input("Nama")
     prodi = st.text_input("Prodi")
     kelas = st.text_input("Kelas")
-    submit = st.form_submit_button("Tambah")
+    simpan = st.form_submit_button("Tambah")
 
-    if submit:
+    if simpan:
         if not valid_npm(npm):
             st.error("NPM harus 12 digit")
         elif not valid_nama(nama):
@@ -152,21 +156,74 @@ with st.form("input"):
             )
             save_data(st.session_state.data)
             st.success("Data berhasil ditambahkan")
+            st.rerun()
 
-# ========= SORTING =========
+# ==========================
+# EDIT DATA
+# ==========================
+st.subheader("✏️ Edit Data Mahasiswa")
+
+npm_edit = st.selectbox(
+    "Pilih NPM",
+    [""] + [m.npm for m in st.session_state.data]
+)
+
+if npm_edit:
+    mhs = next(m for m in st.session_state.data if m.npm == npm_edit)
+
+    with st.form("edit"):
+        nama_baru = st.text_input("Nama", value=mhs.nama)
+        prodi_baru = st.text_input("Prodi", value=mhs.prodi)
+        kelas_baru = st.text_input("Kelas", value=mhs.kelas)
+        update = st.form_submit_button("Simpan Perubahan")
+
+        if update:
+            if not valid_nama(nama_baru):
+                st.error("Nama hanya huruf")
+            else:
+                mhs.nama = nama_baru
+                mhs.prodi = prodi_baru
+                mhs.kelas = kelas_baru
+                save_data(st.session_state.data)
+                st.success("Data berhasil diperbarui")
+                st.rerun()
+
+# ==========================
+# HAPUS DATA
+# ==========================
+st.subheader("🗑 Hapus Data Mahasiswa")
+
+npm_hapus = st.selectbox(
+    "Pilih NPM yang akan dihapus",
+    [""] + [m.npm for m in st.session_state.data],
+    key="hapus"
+)
+
+if npm_hapus:
+    if st.button("Hapus Data"):
+        st.session_state.data = [
+            m for m in st.session_state.data if m.npm != npm_hapus
+        ]
+        save_data(st.session_state.data)
+        st.success("Data berhasil dihapus")
+        st.rerun()
+
+# ==========================
+# SORTING
+# ==========================
 st.subheader("🔃 Sorting Berdasarkan Nama")
 
 algoritma = st.selectbox(
-    "Pilih Algoritma",
+    "Algoritma",
     ["Insertion Sort", "Selection Sort", "Bubble Sort"]
 )
 
 arah = st.selectbox(
-    "Arah Pengurutan",
+    "Arah",
     ["Ascending", "Descending"]
 )
 
-if st.button("Urutkan Nama"):
+if st.button("Urutkan"):
     reverse = arah == "Descending"
 
     if algoritma == "Insertion Sort":
@@ -176,9 +233,11 @@ if st.button("Urutkan Nama"):
     else:
         bubble_sort(st.session_state.data, key=lambda x: x.nama.lower(), reverse=reverse)
 
-    st.success(f"Berhasil diurutkan menggunakan {algoritma}")
+    st.success("Data berhasil diurutkan")
 
-# ========= SEARCH =========
+# ==========================
+# SEARCHING
+# ==========================
 st.subheader("🔍 Searching Berdasarkan NPM")
 
 npm_cari = st.text_input("Masukkan NPM")
@@ -188,27 +247,19 @@ c1, c2 = st.columns(2)
 with c1:
     if st.button("Linear Search"):
         m = linear_search(st.session_state.data, npm_cari)
-        if m:
-            st.success(m.tampil_info())
-        else:
-            st.warning("Data tidak ditemukan")
+        st.success(m.tampil_info()) if m else st.warning("Data tidak ditemukan")
 
 with c2:
     if st.button("Binary Search"):
-        # WAJIB urut berdasarkan NPM
         insertion_sort(st.session_state.data, key=lambda x: x.npm)
         m = binary_search(st.session_state.data, npm_cari)
-        if m:
-            st.success(m.tampil_info())
-        else:
-            st.warning("Data tidak ditemukan")
+        st.success(m.tampil_info()) if m else st.warning("Data tidak ditemukan")
 
-# ========= TABLE =========
+# ==========================
+# TABLE
+# ==========================
 st.subheader("📋 Data Mahasiswa")
 st.dataframe(
     [m.to_dict() for m in st.session_state.data],
     use_container_width=True
 )
-
-
-
